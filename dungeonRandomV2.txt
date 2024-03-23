@@ -1,0 +1,22 @@
+// Steps to print a random sized dungeon with random rooms
+// Rooms can only have 1 door at each wall.
+
+1.  Set a base grid to draw on.
+
+2.  Go to middle of grid.
+
+3.  Generate a random sized subgrid with minimum size of  3 x 3 gridspaces.
+    3.1     Fill the outer spaces with type "wall".
+    3.2     Fill the inner spaces with type "floor".
+    3.3     Go to random wall. 
+        3.3.1       Check if wall already has a door.
+            3.3.1.1     If no door is found on wall, pick random spot on wall & 
+                        exclude corners from selection range for random number.
+            3.3.2           Draw a door in that spot.
+            3.3.3       Else 
+            3.3.4           Go back to step 3.3.
+    3.4     Repeat Step 3.3 for a random number of times.
+
+4.  Copy subgrid into grid.
+
+5.  

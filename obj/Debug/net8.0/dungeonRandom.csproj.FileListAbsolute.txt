@@ -12,3 +12,4 @@
 /Users/sebastian/Sources/CS/dungeonRandom/obj/Debug/net8.0/dungeonRandom.pdb
 /Users/sebastian/Sources/CS/dungeonRandom/obj/Debug/net8.0/dungeonRandom.genruntimeconfig.cache
 /Users/sebastian/Sources/CS/dungeonRandom/obj/Debug/net8.0/ref/dungeonRandom.dll
+/Users/sebastian/Sources/CS/dungeonRandom/obj/Debug/net8.0/dungeonRandom.sourcelink.json
