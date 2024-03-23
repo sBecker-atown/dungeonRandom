@@ -1,0 +1,14 @@
+/Users/sebastian/Sources/CS/dungeonRandom/bin/Debug/net8.0/dungeonRandom
+/Users/sebastian/Sources/CS/dungeonRandom/bin/Debug/net8.0/dungeonRandom.deps.json
+/Users/sebastian/Sources/CS/dungeonRandom/bin/Debug/net8.0/dungeonRandom.runtimeconfig.json
+/Users/sebastian/Sources/CS/dungeonRandom/bin/Debug/net8.0/dungeonRandom.dll
+/Users/sebastian/Sources/CS/dungeonRandom/bin/Debug/net8.0/dungeonRandom.pdb
+/Users/sebastian/Sources/CS/dungeonRandom/obj/Debug/net8.0/dungeonRandom.GeneratedMSBuildEditorConfig.editorconfig
+/Users/sebastian/Sources/CS/dungeonRandom/obj/Debug/net8.0/dungeonRandom.AssemblyInfoInputs.cache
+/Users/sebastian/Sources/CS/dungeonRandom/obj/Debug/net8.0/dungeonRandom.AssemblyInfo.cs
+/Users/sebastian/Sources/CS/dungeonRandom/obj/Debug/net8.0/dungeonRandom.csproj.CoreCompileInputs.cache
+/Users/sebastian/Sources/CS/dungeonRandom/obj/Debug/net8.0/dungeonRandom.dll
+/Users/sebastian/Sources/CS/dungeonRandom/obj/Debug/net8.0/refint/dungeonRandom.dll
+/Users/sebastian/Sources/CS/dungeonRandom/obj/Debug/net8.0/dungeonRandom.pdb
+/Users/sebastian/Sources/CS/dungeonRandom/obj/Debug/net8.0/dungeonRandom.genruntimeconfig.cache
+/Users/sebastian/Sources/CS/dungeonRandom/obj/Debug/net8.0/ref/dungeonRandom.dll
