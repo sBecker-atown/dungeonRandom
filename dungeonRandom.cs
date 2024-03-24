@@ -50,6 +50,8 @@ namespace DungeonRandom
             // Print Dungeon.
             PrintDungeon(workGrid);
         }
+
+        // Copies the Base Grid into a working grid.
         static Tile[,] CopyGridToWorkGrid(Tile[,] grid, Tile[,] wGrid)
         {
             for (int i = 0; i < (int)Size.canvasH; i++)
@@ -61,6 +63,7 @@ namespace DungeonRandom
             }
             return wGrid;
         }
+
         static Tile[,] GenerateRoom(Tile[,] wGrid, int[] start, Direction direction)
         {
             // Check Available space from starting point in direction and return 
@@ -301,7 +304,7 @@ namespace DungeonRandom
             do
             {
                 // Go to random wall.
-                int pickedWall = rand.Next((int)Direction.north, (int)Direction.west + 1);
+                int pickedWall = rand.Next((int)Direction.north, (int)Direction.west);
 
                 // Check if wall has door.
                 if (CheckDoor(pickedWall, height, width, room) == false)
@@ -389,7 +392,7 @@ namespace DungeonRandom
         } 
 
         // Pastes the room into the working Grid.
-        static Tile[,] PasteToWorkGrid(int height, int width, Tile[,] room, Tile[,] wGrid, int [] start)
+        static Tile[,] PasteToWorkGrid(int height, int width, Tile[,] room, Tile[,] wGrid, int[] start)
         {
             for (int i = 0; i < height; i++)
             {
