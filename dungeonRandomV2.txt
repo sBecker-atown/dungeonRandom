@@ -2,21 +2,57 @@
 // Rooms can only have 1 door at each wall.
 
 1.  Set a base grid to draw on.
+        Set all gridspaces to type "blank".
+        Copy grid into working grid.
 
 2.  Go to middle of grid.
+        Set point as starting point.
+        Set direction to NONE;
 
-3.  Generate a random sized subgrid with minimum size of  3 x 3 gridspaces.
-    3.1     Fill the outer spaces with type "wall".
-    3.2     Fill the inner spaces with type "floor".
-    3.3     Go to random wall. 
-        3.3.1       Check if wall already has a door.
-            3.3.1.1     If no door is found on wall, pick random spot on wall & 
-                        exclude corners from selection range for random number.
-            3.3.2           Draw a door in that spot.
-            3.3.3       Else 
-            3.3.4           Go back to step 3.3.
-    3.4     Repeat Step 3.3 for a random number of times.
+3.  Generate a random sized room with minimum size of  3 x 3 gridspaces.
+    3.0     Check direction from which starting point was generated.
+    3.1     Check available space on grid in direction found in 3.0.
+                If direction is NONE. 
+                    Continue to 3.2.
+                Else if direction is not NONE.
+                    Check available space from starting point 
+                    towards edges of grid (x and y axis).
+            Create room of random size within bounds of available space and maximum and minimum size
+    3.2     Shift starting point.
+                If direction is NONE
+                    Shift left by roomWidth / 2.
+                    Shift up by roomHeight / 2.
+                Else if direction is NORTH
+                    Shift left by random number between 1 and (roomWidth - 2) / 2.
+                    Shift up by roomHeight - 1.
+                Else if direction is EAST
+                    Shift up by random number between 1 and (roomHeight - 2) / 2.
+                Else if direction is SOUTH
+                    Shift left by random number between 1 and (roomWidth - 2) / 2.
+                Else if direction is WEST
+                    Shift left by room width - 1.
+                    Shift up by random number between 1 and (roomHeight - 2) / 2.
+    3.3     Fill the outer spaces with type "wall".
+    3.3.1       If space is already a door, do not change.
+    3.4     Fill the inner spaces with type "floor".
+    3.5     Go to random wall. 
+    3.5.1       Check if wall already has a door.
+    3.5.1.1         If no door is found on wall, pick random spot on wall & 
+                    exclude corners from selection range for random number.
+    3.5.2               Draw a door in that spot.
+    3.5.3           Else 
+    3.5.4               Go back to step 3.3.
+    3.6     Repeat Step 3.5 for a random number of times.
 
-4.  Copy subgrid into grid.
+4.  Copy room into temporary working grid.
 
-5.  
+5.  Check for doors again.
+        If Door is found, check with direction door is facing
+            Go random number of spaces (limited to max 3) from door into that direction.
+            Draw all spaces on path as type "corridor".
+            Draw last space as door.
+            Save the spot you ended at as starting point.
+            Save direction as integer to modifiy direction of room expansion.
+    Repeat step 5 till no doors left to find.
+
+6.  Repeat steps 3 - 5 till no space is left. 
