@@ -64,8 +64,7 @@ namespace DungeonRandom
             // that space as one-dimensional array with [0] being vertical 
             // and [1] being horizontal space.
             int[] space = CheckSpaceInDirection(wGrid, start, direction);
-            if (space[0] >= (int)Size.minRoomSize || space[0] <= (int)Size.maxRoomSize &&
-                space[1] >= (int)Size.minRoomSize || space[1] <= (int)Size.maxRoomSize)
+            if (space[0] >= (int)Size.minRoomSize  && space[1] >= (int)Size.minRoomSize)
             {
                 // Generate random Numbers for temporary room array.
                 // What if space is smaller than min? 
