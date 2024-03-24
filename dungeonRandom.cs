@@ -71,8 +71,8 @@ namespace DungeonRandom
                 // What if space is smaller than min? 
                 // What if max room size is larger than available space? 
                 var rand = new Random();
-                int randomWidth = rand.Next((int)Size.minRoomSize, (int)Size.maxRoomSize + 1);
-                int randomHeight = rand.Next((int)Size.minRoomSize, (int)Size.maxRoomSize + 1);
+                int randomWidth = rand.Next((int)Size.minRoomSize, space[1] + 1);
+                int randomHeight = rand.Next((int)Size.minRoomSize, space[0] + 1);
 
                 // Create temporary room array.
                 int[,] room = new int[randomHeight, randomWidth];
@@ -100,8 +100,8 @@ namespace DungeonRandom
 
             if (direction == (int)Direction.none)
             {
-                spaceVert = (int)Size.canvasH;
-                spaceHori = (int)Size.canvasW;
+                spaceVert = (int)Size.maxRoomSize;
+                spaceHori = (int)Size.maxRoomSize;
             }
             else if (direction == (int)Direction.north)
             {
