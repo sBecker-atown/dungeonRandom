@@ -25,12 +25,12 @@ namespace DungeonRandom
         static void Main(string[] args)
         {
             // Set grid to Blank Space
-            int[,] grid = new int[(int)Size.canvasH, (int)Size.canvasW];
+            Tile[,] grid = new Tile[(int)Size.canvasH, (int)Size.canvasW];
             for (int i = 0; i < (int)Size.canvasH; i++)
             {
                 for (int j = 0; j < (int)Size.canvasW; j++)
                 {
-                    grid[i,j] = (int)Tile.blank;
+                    grid[i,j] = Tile.blank;
                 }
             }
 
@@ -38,19 +38,19 @@ namespace DungeonRandom
             int[] start = {(int)Size.canvasH / 2, (int)Size.canvasW / 2};
 
             // Set direction to none
-            int direction = (int)Direction.none;
+            Direction direction = (int)Direction.none;
 
             // Copy Grid into working Grid
-            int[,] workGrid = new int[(int)Size.canvasH, (int)Size.canvasW];
+            Tile[,] workGrid = new Tile[(int)Size.canvasH, (int)Size.canvasW];
             CopyGridToWorkGrid(grid, workGrid);
 
             // Generate a random Room 
             GenerateRoom(workGrid, start, direction);
 
             // Print Dungeon.
-            PrintDungeon((int)Size.canvasH, (int)Size.canvasW, workGrid);
+            PrintDungeon(workGrid);
         }
-        static int[,] CopyGridToWorkGrid(int[,] grid, int[,] wGrid)
+        static Tile[,] CopyGridToWorkGrid(Tile[,] grid, Tile[,] wGrid)
         {
             for (int i = 0; i < (int)Size.canvasH; i++)
             {
@@ -61,7 +61,7 @@ namespace DungeonRandom
             }
             return wGrid;
         }
-        static int[,] GenerateRoom(int[,] wGrid, int[] start, int direction)
+        static Tile[,] GenerateRoom(Tile[,] wGrid, int[] start, Direction direction)
         {
             // Check Available space from starting point in direction and return 
             // that space as one-dimensional array with [0] being vertical 
@@ -77,7 +77,7 @@ namespace DungeonRandom
                 int randomHeight = rand.Next((int)Size.minRoomSize, space[0] + 1);
 
                 // Create temporary room array.
-                int[,] room = new int[randomHeight, randomWidth];
+                Tile[,] room = new Tile[randomHeight, randomWidth];
 
                 // Shift starting point
                 ShiftStartingPoint(start, randomHeight, randomWidth, direction);
@@ -110,26 +110,26 @@ namespace DungeonRandom
         // until it finds a space that is not blank. 
         // Stores space in x and y direction as array with 2 values.
         // If direction is none (start of program), space is set to maximum room size.
-        static int[] CheckSpaceInDirection(int[,] wGrid, int[] start, int direction)
+        static int[] CheckSpaceInDirection(Tile[,] wGrid, int[] start, Direction direction)
         {
             int spaceVert, spaceHori;
 
-            if (direction == (int)Direction.none)
+            if (direction == Direction.none)
             {
                 spaceVert = (int)Size.maxRoomSize;
                 spaceHori = (int)Size.maxRoomSize;
             }
-            else if (direction == (int)Direction.north)
+            else if (direction == Direction.north)
             {
                 spaceVert = CheckAbove(wGrid, start);
                 spaceHori = CheckLeft(wGrid, start) + CheckRight(wGrid, start);
             }
-            else if (direction == (int)Direction.east)
+            else if (direction == Direction.east)
             {
                 spaceVert = CheckAbove(wGrid, start) + CheckBelow(wGrid, start);
                 spaceHori = CheckRight(wGrid, start);
             }
-            else if (direction == (int)Direction.south)
+            else if (direction == Direction.south)
             {
                 spaceVert = CheckBelow(wGrid, start);
                 spaceHori = CheckLeft(wGrid, start) + CheckRight(wGrid, start);
@@ -146,7 +146,7 @@ namespace DungeonRandom
 
         // Measures distance to non blank space above starting point 
         // going towards the upper edge of the base grid.
-        static int CheckAbove(int[,] wGrid, int[] start)
+        static int CheckAbove(Tile[,] wGrid, int[] start)
         {
             int c = 0;
             // Start[0] + 1 ??
@@ -166,7 +166,7 @@ namespace DungeonRandom
 
         // Measures distance to non blank space below starting point 
         // going towards the lower edge of the base grid.
-        static int CheckBelow(int[,] wGrid, int[] start)
+        static int CheckBelow(Tile[,] wGrid, int[] start)
         {
             int c = 0;
             for (int i = start[0]; i < (int)Size.canvasH - start[0]; i++)
@@ -185,7 +185,7 @@ namespace DungeonRandom
 
         // Measures distance to non blank space left of starting point 
         // going towards the left edge of the base grid.
-        static int CheckLeft(int[,] wGrid, int[] start)
+        static int CheckLeft(Tile[,] wGrid, int[] start)
         {
             int c = 0;
             for (int i = start[1]; i > 0; i--)
@@ -204,7 +204,7 @@ namespace DungeonRandom
 
         // Measures distance to non blank space right of starting point 
         // going towards the right edge of the base grid.
-        static int CheckRight(int[,] wGrid, int[] start)
+        static int CheckRight(Tile[,] wGrid, int[] start)
         {
             int c = 0;
             for (int i = start[1]; i < (int)Size.canvasW - start[1]; i++)
@@ -224,33 +224,33 @@ namespace DungeonRandom
         // Checks from which direction the starting point for drawing a room was reached
         // Then shifts the starting point by a random number, based on previously calculated
         // room size.
-        static int[] ShiftStartingPoint(int[] start, int height, int width, int direction)
+        static int[] ShiftStartingPoint(int[] start, int height, int width, Direction direction)
         {
-            if (direction == (int)Direction.none)
+            if (direction == Direction.none)
             {
                 start[0] = start[0] - (height / 2); 
                 start[1] = start[1] - (width / 2);
             }
-            else if (direction == (int)Direction.north)
+            else if (direction == Direction.north)
             {
                 start[0] = start[0] + height - 1;
                 var rand = new Random();
                 int shift = rand.Next(1, (width - 2) / 2 + 1);
                 start[1] = start[1] + shift;
             }
-            else if (direction == (int)Direction.east)
+            else if (direction == Direction.east)
             {
                 var rand = new Random();
                 int shift = rand.Next(1, (height - 2) / 2 + 1);
                 start[0] = start[0] + shift;
             }
-            else if (direction == (int)Direction.south)
+            else if (direction == Direction.south)
             {
                 var rand = new Random();
                 int shift = rand.Next(1, (width - 2) / 2 + 1);
                 start[1] = start[1] + shift;
             }
-            else if (direction == (int)Direction.west)
+            else if (direction == Direction.west)
             {
                 var rand = new Random();
                 int shift = rand.Next(1, (height - 2) / 2 + 1);
@@ -262,26 +262,26 @@ namespace DungeonRandom
 
         // Draws a wall around the room. (Edge aligned INSIDE the room)
         // If there is a door, no wall is drawn in that space. (Doors stay doors)
-        static int[,] GenerateWalls(int height, int width, int[,] room, int[,] wGrid)
+        static Tile[,] GenerateWalls(int height, int width, Tile[,] room, Tile[,] wGrid)
         {
             for (int i = 0; i < height; i++)
             {
                 for (int j = 0; j < width; j++)
                 {
                     // Draw northern and southern wall, do not draw over existing doors.
-                    if ((i == 0 || i == height - 1) && wGrid[i, j] != (int)Tile.door)
+                    if ((i == 0 || i == height - 1) && wGrid[i, j] != Tile.door)
                     {
-                        room[i,j] = (int)Tile.wall;
+                        room[i,j] = Tile.wall;
                     }
                     // Draw eastern and western wall, do not draw over existing doors.
-                    else if ((j == 0 || j == width - 1) && wGrid[i, j] != (int)Tile.door)
+                    else if ((j == 0 || j == width - 1) && wGrid[i, j] != Tile.door)
                     {
-                        room[i,j] = (int)Tile.wall;
+                        room[i,j] = Tile.wall;
                     }
                     // Draw inside of room.
                     else 
                     {
-                        room[i,j] = (int)Tile.floor;
+                        room[i,j] = Tile.floor;
                     }
                 }
             }
@@ -292,7 +292,7 @@ namespace DungeonRandom
         // (Only one door per wall).
         // If there is already a door on that wall (CheckDoor[] == false), 
         // no new door is drawn on that wall.
-        static int[,] GenerateDoors(int height, int width, int[,]room)
+        static Tile[,] GenerateDoors(int height, int width, Tile[,]room)
         {
             // Generate random number of doors.
             var rand = new Random();
@@ -310,22 +310,22 @@ namespace DungeonRandom
                     if (pickedWall == (int)Direction.north)
                     {
                         int pickedSpot = rand.Next(1, width - 2);
-                        room[0,pickedSpot] = (int)Tile.door;
+                        room[0,pickedSpot] = Tile.door;
                     }
                     else if (pickedWall == (int)Direction.east)
                     {
                         int pickedSpot = rand.Next(1, height - 2);
-                        room[pickedSpot, width - 1] = (int)Tile.door;
+                        room[pickedSpot, width - 1] = Tile.door;
                     }
                     else if (pickedWall == (int)Direction.south)
                     {
                         int pickedSpot = rand.Next(1, width - 2);
-                        room[height - 1, pickedSpot] = (int)Tile.door;
+                        room[height - 1, pickedSpot] = Tile.door;
                     }
                     else if (pickedWall == (int)Direction.west)
                     {
                         int pickedSpot = rand.Next(1, height - 2);
-                        room[pickedSpot, 0] = (int)Tile.door;
+                        room[pickedSpot, 0] = Tile.door;
                     }
                 }
                 numberOfDoors--;
@@ -336,13 +336,13 @@ namespace DungeonRandom
         }
 
         // Checks if a wall in a given direction has a door or not.
-        static bool CheckDoor(int wall, int height, int width, int[,] room)
+        static bool CheckDoor(int wall, int height, int width, Tile[,] room)
        {
             if (wall == (int)Direction.north)
             {
                 for (int i = 1; i < width - 2; i++)
                 {
-                    if (room[0, i] == (int)Tile.door)
+                    if (room[0, i] == Tile.door)
                     {
                         return true;
                     }
@@ -353,7 +353,7 @@ namespace DungeonRandom
             {
                 for (int i = 1; i < height - 2; i++)
                 {
-                    if (room[i, width - 1] == (int)Tile.door)
+                    if (room[i, width - 1] == Tile.door)
                     {
                         return true;
                     }
@@ -364,7 +364,7 @@ namespace DungeonRandom
             {
                 for (int i = 1; i < width - 2; i++)
                 {
-                    if (room[height - 1,i] == (int)Tile.door)
+                    if (room[height - 1,i] == Tile.door)
                     {
                         return true;
                     }
@@ -375,7 +375,7 @@ namespace DungeonRandom
             {
                 for (int i = 1; i < height - 2; i++)
                 {
-                    if (room[i, 0] == (int)Tile.door)
+                    if (room[i, 0] == Tile.door)
                     {
                         return true;
                     }
@@ -389,7 +389,7 @@ namespace DungeonRandom
         } 
 
         // Pastes the room into the working Grid.
-        static int[,] PasteToWorkGrid(int height, int width, int[,] room, int[,] wGrid, int [] start)
+        static Tile[,] PasteToWorkGrid(int height, int width, Tile[,] room, Tile[,] wGrid, int [] start)
         {
             for (int i = 0; i < height; i++)
             {
@@ -404,29 +404,29 @@ namespace DungeonRandom
         // Prints the Dungeon. (Currently using the working grid)
         // Currently prints floor as '.' walls as '#' doors as '_' and corridors as '.'
         // Blank spaces are left blank.
-        static void PrintDungeon(int height, int width, int[,] room)
+        static void PrintDungeon(Tile[,] grid)
         {
-            for (int i = 0; i < height; i++)
+            for (int i = 0; i < (int)Size.canvasH; i++)
             {
-                for (int j = 0; j < width; j++)
+                for (int j = 0; j < (int)Size.canvasW; j++)
                 {
-                    if (room[i,j] == (int)Tile.wall)
+                    if (grid[i,j] == Tile.wall)
                     {
                         Console.Write("#");
                     }
-                    else if (room[i,j] == (int)Tile.door)
+                    else if (grid[i,j] == Tile.door)
                     {
                         Console.Write("_");
                     }
-                    else if (room[i,j] == (int)Tile.floor)
+                    else if (grid[i,j] == Tile.floor)
                     {
                         Console.Write(".");
                     }
-                    else if (room[i,j] == (int)Tile.corridor)
+                    else if (grid[i,j] == Tile.corridor)
                     {
                         Console.Write(".");
                     }
-                    else if (room[i,j] == (int)Tile.blank)
+                    else if (grid[i,j] == Tile.blank)
                     {
                         Console.Write(" ");
                     }
