@@ -55,10 +55,13 @@ namespace DungeonRandom
             Tile[,] workGrid = new Tile[(int)Size.canvasH, (int)Size.canvasW];
             CopyGridToWorkGrid(grid, workGrid);
 
+            int numberOfDoors = 0;
             // Generate a random Room 
-            GenerateRoom(workGrid, start);
+            GenerateRoom(workGrid, start, ref numberOfDoors);
 
-            // Set end of corridor to type door and set new startingpoint at door.
+            // TODO 
+            // Record point and direction of door at end of corridors
+            // Look into GenerateCorridors.
 
             // Draw another room around the startingpoints.
 
@@ -79,7 +82,7 @@ namespace DungeonRandom
             return wGrid;
         }
 
-        static Tile[,] GenerateRoom(Tile[,] wGrid, Point start)
+        static Tile[,] GenerateRoom(Tile[,] wGrid, Point start, ref int numberOfDoors)
         {
             // Check Available space from starting point in direction and return 
             // that space as one-dimensional array with [0] being vertical 
@@ -112,7 +115,7 @@ namespace DungeonRandom
                 // like we did with the starting room.
                 // Every door should get a specific Point assigned that stores location and direction.
                 // Generate random number of doors.
-                int numberOfDoors = rand.Next(1, 5);
+                numberOfDoors = rand.Next(1, 5);
                 Point[] doorInRoom = new Point[numberOfDoors];
                 GenerateDoors(randomHeight, randomWidth, room, ref doorInRoom, numberOfDoors, start);
 
@@ -380,28 +383,48 @@ namespace DungeonRandom
                 int length = rand.Next(1, 4);
                 switch (door[i].direction)
                 {
+                    // TODO 
+                    // Still need to record point and direction 
+                    // where door is generated at end of corridor.
+                    // Task for tomorrow.
                     case Direction.north:
                         for (int j = 0; j < length; j++)
                         {
                             wGrid[door[i].y - 1 - j, door[i].x] = Tile.corridor;
+                            if (j == length - 1)
+                            {
+                                wGrid[door[i].y - 1 - j, door[i].x] = Tile.door;
+                            }
                         }
                         break;       
                     case Direction.east:
                         for (int j = 0; j < length; j++)
                         {
                             wGrid[door[i].y, door[i].x + 1 + j] = Tile.corridor;
+                            if (j == length - 1)
+                            {
+                                wGrid[door[i].y, door[i].x + 1 + j] = Tile.door;
+                            }
                         }
                         break;
                     case Direction.south:
                         for (int j = 0; j < length; j++)
                         {
                             wGrid[door[i].y + 1 + j, door[i].x] = Tile.corridor;
+                            if (j == length - 1)
+                            {
+                                wGrid[door[i].y + 1 + j, door[i].x] = Tile.door;
+                            }
                         }
                         break;
                     case Direction.west:
                         for (int j = 0; j < length; j++)
                         {
                             wGrid[door[i].y, door[i].x - 1 - j] = Tile.corridor;
+                            if (j == length - 1)
+                            {
+                                wGrid[door[i].y, door[i].x - 1 - j] = Tile.door;
+                            }
                         }
                         break;
                 }
