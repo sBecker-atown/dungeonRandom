@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Data;
 using System.Reflection.Metadata;
 using System.Xml;
 
@@ -12,7 +13,7 @@ namespace DungeonRandom
     enum Size
     {
         // Canvas Sizes should be multiplicants of 2 
-        canvasW = 80, canvasH = 20, maxRoomSize = 12, minRoomSize = 3,
+        canvasW = 80, canvasH = 20, maxRoomSize = 10, minRoomSize = 3, maxCorridorLength = 3,
     }
     enum Tile
     {        
@@ -20,13 +21,20 @@ namespace DungeonRandom
     }
     struct Point
     {
-        public int index;
         public int y;
         public int x;
         public Direction direction;
         public Tile type;
     }
 
+    class Door
+    {
+        public Direction direction;
+        public int y;
+        public int x;
+        public bool used;
+    }
+ 
     // Draws a dungeon with a random number of randomly sized rooms 
     // that have a random number of doors, connected by randomly long corridors. 
     class Program
@@ -48,22 +56,28 @@ namespace DungeonRandom
             start.y = (int)Size.canvasH / 2; 
             start.x = (int)Size.canvasW / 2;
             start.direction = Direction.none;
-            start.index = 0;
             start.type = Tile.blank;
 
             // Copy Grid into working Grid
             Tile[,] workGrid = new Tile[(int)Size.canvasH, (int)Size.canvasW];
             CopyGridToWorkGrid(grid, workGrid);
 
-            int numberOfDoors = 0;
+            List<Door> allDoors = new List<Door>();
             // Generate a random Room 
-            GenerateRoom(workGrid, start, ref numberOfDoors);
-
-            // TODO 
-            // Record point and direction of door at end of corridors
-            // Look into GenerateCorridors.
+            GenerateRoom(workGrid, start, allDoors);
 
             // Draw another room around the startingpoints.
+            for (int i = 0; i < allDoors.Count; i++)
+            {
+               if (allDoors[i].used == false)
+               {
+                   start.y = allDoors[i].y;
+                   start.x = allDoors[i].x;
+                   start.direction = allDoors[i].direction;
+                   GenerateRoom(workGrid, start, allDoors);
+                   allDoors[i].used = true;
+               }
+            }
 
             // Print Dungeon.
             PrintDungeon(workGrid);
@@ -82,7 +96,7 @@ namespace DungeonRandom
             return wGrid;
         }
 
-        static Tile[,] GenerateRoom(Tile[,] wGrid, Point start, ref int numberOfDoors)
+        static Tile[,] GenerateRoom(Tile[,] wGrid, Point start, List<Door> allDoors)
         {
             // Check Available space from starting point in direction and return 
             // that space as one-dimensional array with [0] being vertical 
@@ -90,41 +104,33 @@ namespace DungeonRandom
             int[] space = CheckSpaceInDirection(wGrid, start);
             if (space[0] >= (int)Size.minRoomSize && space[1] >= (int)Size.minRoomSize)
             {
-                // Generate random Numbers for temporary room array.
-                // What if space is smaller than min? 
-                // What if max room size is larger than available space? 
                 var rand = new Random();
-                int randomWidth = rand.Next((int)Size.minRoomSize, space[1] + 1);
-                int randomHeight = rand.Next((int)Size.minRoomSize, space[0] + 1);
+                int randW = rand.Next((int)Size.minRoomSize, space[1] + 1);
+                if ((int)Size.minRoomSize == space[1]) randW = 3;
+                int randH = rand.Next((int)Size.minRoomSize, space[0] + 1);
+                if ((int)Size.minRoomSize == space[0]) randH = 3;
 
                 // Create temporary room array.
-                Tile[,] room = new Tile[randomHeight, randomWidth];
+                Tile[,] room = new Tile[randH, randW];
 
                 // Shift starting point
-                start = ShiftStartingPoint(start, randomHeight, randomWidth);
+                start = ShiftStartingPoint(start, randH, randW);
 
                 // Draw Room.
-                GenerateWalls(randomHeight, randomWidth, room, wGrid);
+                GenerateWalls(randH, randW, room, wGrid);
 
-                // TODO
-                // Generate Doors needs to somehow store 
-                // the direction and spot of every door generated.
-                // With that knowledge we can then draw corridor from every door &
-                // then update the spot we used to the end of the corridor.
-                // Then we can draw a door in that spot and draw a room around that door 
-                // like we did with the starting room.
-                // Every door should get a specific Point assigned that stores location and direction.
-                // Generate random number of doors.
-                numberOfDoors = rand.Next(1, 5);
-                Point[] doorInRoom = new Point[numberOfDoors];
-                GenerateDoors(randomHeight, randomWidth, room, ref doorInRoom, numberOfDoors, start);
+                // Get random number of doors (max 1 door per wall)
+                int numberOfDoors = rand.Next(1, 5);
+
+                // Draw Doors on randomly picked wall
+                GenerateDoors(randH, randW, room, 
+                numberOfDoors, start, allDoors);
 
                 // Write Room into center of memGrid.
-                PasteToWorkGrid(randomHeight, randomWidth, room, wGrid, start);
+                PasteToWorkGrid(randH, randW, room, wGrid, start);
 
                 // Generate corridors.
-                Point[] endOfCorridor = new Point[numberOfDoors];
-                GenerateCorridors(wGrid, doorInRoom, ref endOfCorridor, numberOfDoors);
+                GenerateCorridors(wGrid, allDoors, start);
             }
             else
             {
@@ -166,8 +172,8 @@ namespace DungeonRandom
                     break;
             }
 
-            int[] space = [spaceVert, spaceHori];
-            return space;
+            int[] spaceInDirection = [spaceVert, spaceHori];
+            return spaceInDirection;
         }
 
         // Measures distance to non blank space above starting point 
@@ -175,8 +181,7 @@ namespace DungeonRandom
         static int CheckAbove(Tile[,] wGrid, Point start)
         {
             int c = 0;
-            // Start[0] + 1 ??
-            for (int i = start.y; i > 0; i--)
+            for (int i = start.y; i >= 0; i--)
             {
                 switch (wGrid[i, start.x])
                 {
@@ -195,7 +200,7 @@ namespace DungeonRandom
         static int CheckBelow(Tile[,] wGrid, Point start)
         {
             int c = 0;
-            for (int i = start.y; i < (int)Size.canvasH - start.y; i++)
+            for (int i = 0; i <= (int)Size.canvasH - start.y; i++)
             {
                 if (wGrid[i, start.x] == (int)Tile.blank)
                 {
@@ -203,7 +208,7 @@ namespace DungeonRandom
                 }
                 else
                 {
-                    break;
+                    return c;
                 }
             }
             return c;
@@ -214,7 +219,7 @@ namespace DungeonRandom
         static int CheckLeft(Tile[,] wGrid, Point start)
         {
             int c = 0;
-            for (int i = start.x; i > 0; i--)
+            for (int i = start.x; i >= 0; i--)
             {
                 if (wGrid[start.y, i] == (int)Tile.blank)
                 {
@@ -222,7 +227,7 @@ namespace DungeonRandom
                 }
                 else
                 {
-                    break;
+                    return c;
                 }
             }
             return c;
@@ -233,7 +238,7 @@ namespace DungeonRandom
         static int CheckRight(Tile[,] wGrid, Point start)
         {
             int c = 0;
-            for (int i = start.x; i < (int)Size.canvasW - start.x; i++)
+            for (int i = 0; i <= (int)Size.canvasW - start.x; i++)
             {
                 if (wGrid[start.y, i] == (int)Tile.blank)
                 {
@@ -241,7 +246,7 @@ namespace DungeonRandom
                 }
                 else
                 {
-                    break;
+                    return c;
                 }
             }
             return c;
@@ -314,17 +319,18 @@ namespace DungeonRandom
         // (Only one door per wall).
         // If there is already a door on that wall (CheckDoor[] == false), 
         // no new door is drawn on that wall.
-        static Tile[,] GenerateDoors(int height, int width, Tile[,]room, ref Point[] door, int numberOfDoors, Point start)
+        static Tile[,] GenerateDoors(int height, int width, Tile[,]room, 
+        int numberOfDoors, Point start, List<Door> allDoors)
         {
             do
             {
-                door[numberOfDoors - 1].index = numberOfDoors;
                 // Go to random wall.
                 Array pickedWall = Enum.GetValues(typeof(Direction));
                 Random rand = new Random();
                 Direction randomWall = (Direction)pickedWall.GetValue(rand.Next(1, pickedWall.Length))!;
 
                 int pickedSpot;
+                Door thisDoor = new Door();
 
                 // Check if wall has door.
                 if (CheckDoor(randomWall, height, width, room) == false)
@@ -335,35 +341,49 @@ namespace DungeonRandom
                         case Direction.north:
                             pickedSpot = rand.Next(1, width - 2);
                             room[0,pickedSpot] = Tile.door;
-                            door[numberOfDoors - 1].type = Tile.door;
-                            door[numberOfDoors - 1].direction = Direction.north;
-                            door[numberOfDoors - 1].x = pickedSpot + start.x;
-                            door[numberOfDoors - 1].y = 0 + start.y;
+
+                            thisDoor.direction = Direction.north;
+                            thisDoor.x = pickedSpot + start.x;
+                            thisDoor.y = 0 + start.y;
+                            thisDoor.used = false;
+
+                            allDoors.Add(thisDoor);
                             break;
+
                         case Direction.east:
                             pickedSpot = rand.Next(1, height - 2);
                             room[pickedSpot, width - 1] = Tile.door;
-                            door[numberOfDoors - 1].type = Tile.door;
-                            door[numberOfDoors - 1].direction = Direction.east;
-                            door[numberOfDoors - 1].x = width - 1 + start.x;
-                            door[numberOfDoors - 1].y = pickedSpot + start.y;
+
+                            thisDoor.direction = Direction.east;
+                            thisDoor.x = width - 1 + start.x;
+                            thisDoor.y = pickedSpot + start.y;
+                            thisDoor.used = false;
+
+                            allDoors.Add(thisDoor);
                             break;
+                            
                         case Direction.south:
                             pickedSpot = rand.Next(1, width - 2);
                             room[height - 1, pickedSpot] = Tile.door;
-                            door[numberOfDoors - 1].type = Tile.door;
-                            door[numberOfDoors - 1].direction = Direction.south;
-                            door[numberOfDoors - 1].x = pickedSpot + start.x;
-                            door[numberOfDoors - 1].y = height - 1 + start.y;
-                            break;
+                            thisDoor.direction = Direction.south;
+                            thisDoor.x = pickedSpot + start.x;
+                            thisDoor.y = height - 1 + start.y;
+                            thisDoor.used = false;
+
+                            allDoors.Add(thisDoor);
+                            break;                         
+                            
                         case Direction.west:
                             pickedSpot = rand.Next(1, height - 2);
                             room[pickedSpot, 0] = Tile.door;
-                            door[numberOfDoors - 1].type = Tile.door;
-                            door[numberOfDoors - 1].direction = Direction.west;
-                            door[numberOfDoors - 1].x = 0 + start.x;
-                            door[numberOfDoors - 1].y = pickedSpot + start.y;
-                            break;
+
+                            thisDoor.direction = Direction.west; 
+                            thisDoor.x = 0 + start.x;
+                            thisDoor.y = pickedSpot + start.y;
+                            thisDoor.used = false;
+
+                            allDoors.Add(thisDoor);
+                            break;                            
                     }
                 }
                 numberOfDoors--;
@@ -374,56 +394,108 @@ namespace DungeonRandom
         }
 
         // Generates a corridor in front of each door.
-        static Tile[,] GenerateCorridors(Tile[,] wGrid, Point[] door, 
-        ref Point[] endOfCorridor, int numberOfDoors)
+        static Tile[,] GenerateCorridors(Tile[,] wGrid, List<Door> allDoors, Point start)
         {
-            for (int i = numberOfDoors - 1; i >= 0; i--)
+            // Get number of doors
+            int count = 0;
+            foreach (Door thisDoor in allDoors)
+            {
+                if (thisDoor.used == false)
+                {
+                    count++;
+                }
+            }
+
+            for (int i = count - 1; i >= 0; i--)
             {                
+                start.x = allDoors[i].x;
+                start.y = allDoors[i].y;
+                int[] space = CheckSpaceInDirection(wGrid, start);
                 var rand = new Random();
                 int length = rand.Next(1, 4);
-                switch (door[i].direction)
+                switch (allDoors[i].direction)
                 {
-                    // TODO 
-                    // Still need to record point and direction 
-                    // where door is generated at end of corridor.
-                    // Task for tomorrow.
                     case Direction.north:
+                        // if (space[0] == 0) break;
+                        // else if (space[0] < (int)Size.maxCorridorLength) length = rand.Next(1, space[0]);
                         for (int j = 0; j < length; j++)
                         {
-                            wGrid[door[i].y - 1 - j, door[i].x] = Tile.corridor;
+                            allDoors[i].used = true;
+                            wGrid[allDoors[i].y - 1 - j, allDoors[i].x] = Tile.corridor;
                             if (j == length - 1)
                             {
-                                wGrid[door[i].y - 1 - j, door[i].x] = Tile.door;
+                                wGrid[allDoors[i].y - 1 - j, allDoors[i].x] = Tile.door;
+                                Door thisDoor = new Door
+                                {
+                                    direction = Direction.north,
+                                    x = allDoors[i].x,
+                                    y = allDoors[i].y - 1 - j,
+                                    used = false
+                                };
+                                allDoors.Add(thisDoor);
                             }
                         }
                         break;       
                     case Direction.east:
+                        // if (space[1] == 0) break;
+                        // else if (space[1] < (int)Size.maxCorridorLength) length = rand.Next(1, space[1]);
                         for (int j = 0; j < length; j++)
                         {
-                            wGrid[door[i].y, door[i].x + 1 + j] = Tile.corridor;
+                            allDoors[i].used = true;
+                            wGrid[allDoors[i].y, allDoors[i].x + 1 + j] = Tile.corridor;
                             if (j == length - 1)
                             {
-                                wGrid[door[i].y, door[i].x + 1 + j] = Tile.door;
+                                wGrid[allDoors[i].y, allDoors[i].x + 1 + j] = Tile.door;
+                                Door thisDoor = new Door
+                                {
+                                    direction = Direction.east,
+                                    x = allDoors[i].x + 1 + j,
+                                    y = allDoors[i].y,
+                                    used = false
+                                };
+                                allDoors.Add(thisDoor);
                             }
                         }
                         break;
                     case Direction.south:
+                        // if (space[0] == 0) break;
+                        // else if (space[0] < (int)Size.maxCorridorLength) length = rand.Next(1, space[0]);
                         for (int j = 0; j < length; j++)
                         {
-                            wGrid[door[i].y + 1 + j, door[i].x] = Tile.corridor;
+                            allDoors[i].used = true;
+                            wGrid[allDoors[i].y + 1 + j, allDoors[i].x] = Tile.corridor;
                             if (j == length - 1)
                             {
-                                wGrid[door[i].y + 1 + j, door[i].x] = Tile.door;
+                                wGrid[allDoors[i].y + 1 + j, allDoors[i].x] = Tile.door;
+                                Door thisDoor = new Door
+                                {
+                                    direction = Direction.south,
+                                    x = allDoors[i].x,
+                                    y = allDoors[i].y + 1 + j,
+                                    used = false
+                                };
+                                allDoors.Add(thisDoor);
                             }
                         }
                         break;
                     case Direction.west:
+                        // if (space[1] == 0) break;
+                        // else if (space[1] < (int)Size.maxCorridorLength) length = rand.Next(1, space[1]);
                         for (int j = 0; j < length; j++)
                         {
-                            wGrid[door[i].y, door[i].x - 1 - j] = Tile.corridor;
+                            allDoors[i].used = true;
+                            wGrid[allDoors[i].y, allDoors[i].x - 1 - j] = Tile.corridor;
                             if (j == length - 1)
                             {
-                                wGrid[door[i].y, door[i].x - 1 - j] = Tile.door;
+                                wGrid[allDoors[i].y, allDoors[i].x - 1 - j] = Tile.door;
+                                Door thisDoor = new Door
+                                {
+                                    direction = Direction.west,
+                                    x = allDoors[i].x - 1 - j,
+                                    y = allDoors[i].y,
+                                    used = false
+                                };
+                                allDoors.Add(thisDoor);
                             }
                         }
                         break;
@@ -509,7 +581,7 @@ namespace DungeonRandom
                             Console.Write("_");
                             break;
                         case Tile.floor:
-                            Console.Write(".");
+                            Console.Write(" ");
                             break;
                         case Tile.corridor:
                             Console.Write(".");

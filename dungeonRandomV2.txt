@@ -56,3 +56,18 @@
     Repeat step 5 till no doors left to find.
 
 6.  Repeat steps 3 - 5 till no space is left. 
+
+
+TODOS 
+
+// Loop through list "doors" and set start.x = doors[i].x and start.y = doors[i].y.
+//     Check first, if doors[i].used == true, if so, ignore this door. 
+//     If Door is unused, set thisDoor.used = true;
+
+OLD CODE SNIPPETS
+
+GenerateDoors: 
+// door[numberOfDoors - 1].type = Tile.door;
+// door[numberOfDoors - 1].direction = Direction.west;
+// door[numberOfDoors - 1].x = 0 + start.x;
+// door[numberOfDoors - 1].y = pickedSpot + start.y;
