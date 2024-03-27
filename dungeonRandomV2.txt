@@ -64,6 +64,11 @@ TODOS
 //     Check first, if doors[i].used == true, if so, ignore this door. 
 //     If Door is unused, set thisDoor.used = true;
 
+// CheckSpaceInDirection needs to stop counting, once it finds a space that is not blank.
+// CheckSpace does not take into account, that room will be shifted.
+// Shift ShiftStartingPoint needs to check agains available space and 
+// adjust shift to be within room size and available space in direction of shift.
+
 OLD CODE SNIPPETS
 
 GenerateDoors: 
@@ -71,3 +76,12 @@ GenerateDoors:
 // door[numberOfDoors - 1].direction = Direction.west;
 // door[numberOfDoors - 1].x = 0 + start.x;
 // door[numberOfDoors - 1].y = pickedSpot + start.y;
+
+
+    x
+y   0000000000
+    0000000000
+    00000x0000
+    0000000000
+    0000000000
+
