@@ -68,15 +68,18 @@ TODOS
 // Shift ShiftStartingPoint needs to check agains available space and 
 // adjust shift to be within room size and available space in direction of shift.
 
-// GenerateWalls - Check if Tile is already Door always checks wGrid[0 + i, 0 + j]
-// not actually at space the room is created.
-// -
-// Let's write a function, that calculates, which point of workGrid we are currently
-// in for each point of the room. (Basically wGrid [0 + start.y + i, 0 + start.x + j])
-// See PasteToWorkGrid but return a "Point current".
-// -
-// With that translation, we can then accurately check if the space in the wall has
-// already a door. 
+// GenerateCorridors does not actually loop throug all doors but only uses the door
+// that sits at allDoors[number of unused doors - 1] 
+// There for we always get 0 space, because at that door no space is obviously available.
+// Also weirdly puts corridors at the end of corridors 
+// Possible fix: set another state other than used or not used. Maybe set
+// another called "End of corridor" and only draw rooms at end of corridor 
+// and corridors only at unused doors.
+// FIX THAT!!! 
+
+// Also, if we loop through all doors and only generate corridors for the
+// ones where door is unused, OutOfBound happens for drawing corridors. 
+// Take a look at line 648 and 594 pls.
 
 
 OLD CODE SNIPPETS
